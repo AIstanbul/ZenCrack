@@ -1,12 +1,12 @@
 /*
-	This file is part of a dirty hashcracker.
+	This file is part of ZenCracker.
 
     This software is free : you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    This software is distributed in the hope that it will be useful,
+    ZenCracker is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,7 +32,6 @@ class DictionnaryAttack {
 	// Attributes
 	private : unordered_map<string, bool> hashlist;
 	private : vector<string> wordlist;
-	private : vector<string> rulelist;
 	private : Hash hash;
 	private : InputCleaner cleaner;
 
@@ -51,14 +50,14 @@ class DictionnaryAttack {
 
 	// Methods
 	public : void run() {
-		time_t t1 = time(NULL);
+		clock_t start, finish; 
 		cout << "## Run dictionnary attack :" << endl;
-		Rules ruleParser;
 		int i= 0;
 		const int wsize = wordlist.size();
 		unordered_map<string, bool> hashlistShared = hashlist;
 		vector<string> resultlist;
 
+		start = clock(); 
 		#pragma omp parallel for shared(i, hashlistShared, resultlist)
 		for (i=0;i < wsize; i++) {
 			string hashstr = hash.getHash(wordlist[i]);
@@ -71,11 +70,15 @@ class DictionnaryAttack {
 			}
 		}
 
+		finish = clock(); 
+		double duration = (double)(finish - start) / CLOCKS_PER_SEC; 
+
 		// Display stats
 		cout << "--------------------------------" << endl;
 		cout << "## Dictionary : " << wordlist.size() << " words." << endl;
-		cout << "## Total time : " << double(difftime(time(NULL), t1)) << " sec." << endl;
-		cout << "## Avg speed : " << int(wordlist.size() / double(difftime(time(NULL), t1))) << " hash/sec." << endl;
+		cout << "## Total time : " << duration << " sec." << endl;
+		duration = (duration == 0) ? 1 : duration;
+		cout << "## Avg speed : " << int(wordlist.size() / duration) << " hash/sec." << endl;
 	}
 
 	/*

@@ -15,7 +15,7 @@
     along with this software.  If not, see <http://www.gnu.org/licenses/>.
 
 	Author : Ganapati
-	Date : 31/07/2012
+	Date : 04/08/2012
 */
 
 using namespace std;
@@ -26,13 +26,16 @@ using namespace std;
 #include <unordered_map>
 #include <time.h>
 #include <omp.h>
+#include "BFGen.cpp"
 
-class CombinatorAttack {
+class BruteForceAttack {
 
 	// Attributes
 	private : unordered_map<string, bool> hashlist;
-	private : vector<string> wordlist;
 	private : Hash hash;
+	private : char *buff;
+	private : int min, max;
+	private : int charsetlength;
 	private : InputCleaner cleaner;
 
 	// Setters
@@ -42,43 +45,46 @@ class CombinatorAttack {
 		cout << "## Done" << endl;
 	}
 
-	public : void setWordlist(string wordFileName) {
-		cout << "## Start processing wordlist" << endl;
-		wordlist = cleaner.cleanWordList(wordFileName);
-		cout << "## Done" << endl;
+	public : void setCharset(string charset) {
+		
+		charsetlength = charset.length();
+		buff = new char[charset.length()];
+		for (int i=0;i<charset.length(); i++)
+			 buff[i] = charset[i];
+	}
+
+	public : void setRange(int amin, int amax) {
+		min = amin;
+		max = amax;
 	}
 
 	// Methods
 	public : void run() {
 		clock_t start, finish; 
-		cout << "## Run combinator attack :" << endl;
-		int i, j= 0;
-		const int wsize = wordlist.size();
+		cout << "## Run Bruteforce attack :" << endl;
 		unordered_map<string, bool> hashlistShared = hashlist;
 		vector<string> resultlist;
-
 		start = clock(); 
-		#pragma omp parallel for shared(i,j, hashlistShared, resultlist)
-		for (i=0;i < wsize; i++) {
-			for (j=0;j < wsize; j++) {
-				string hashstr = hash.getHash(wordlist[i] + wordlist[j]);
-				#pragma omp critical
-				{
-					if (hashlistShared[hashstr]) {
-						cout << hashstr << ":" << wordlist[i] << wordlist[j] << endl;
-						hashlistShared.erase(hashstr);
-					}
+		
+		// DO MAGIC HERE
+		BFGen bg(buff,min,max);
+		while(bg.getStr(buff)==0){
+			string hashstr = hash.getHash(buff);
+			if (hashlistShared[hashstr]) {
+					cout << hashstr << ":" << buff << endl;
+					hashlistShared.erase(hashstr);
 				}
-			}
 		}
+		// END MAGIC
 
 		finish = clock(); 
-		double duration = (double)(finish - start) / CLOCKS_PER_SEC; 
-
+		
 		// Display stats
 		cout << "--------------------------------" << endl;
+		double duration = (double)(finish - start) / CLOCKS_PER_SEC; 
 		cout << "## Total time : " << duration << " sec." << endl;
-		cout << "## Avg speed : " << int((wordlist.size() * wordlist.size()) / duration) << " hash/sec." << endl;
+		duration = (duration == 0) ? 1 : duration;
+		cout << "## Avg speed : " << int(pow((max-min), charsetlength) / duration) << " hash/sec." << endl;
 	}
 
 	/*

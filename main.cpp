@@ -27,6 +27,7 @@
 #include "Attacks/Rules/RulesAttack.cpp"
 #include "Attacks/Dictionnary/DictionnaryAttack.cpp"
 #include "Attacks/Combinator/CombinatorAttack.cpp"
+#include "Attacks/BF/BruteForceAttack.cpp"
 
 using namespace std;
 
@@ -35,43 +36,64 @@ int main(int argc, char *argv[])
 	string hashFileName;
 	string wordFileName;
 	string rulesFileName;
+	string charset;
 	int	attackType = 0;
 	int hashType = 0;
 	int reqArgs = 0;
+	int min;
+	int max;
+	bool args=false;
 
     for (int i=0; i < argc; i++)
     {
 		string arg = argv[i];
 
 		if (arg == "-h") {
-			reqArgs++;
+			args=true;
 			hashFileName = argv[i+1];
 		}
 
 		if (arg == "-a") {
+			args=true;
 			attackType = atoi( &argv[i+1][0] );
 		}
 
+		if (arg == "-min") {
+			args=true;
+			min = atoi( &argv[i+1][0] );
+		}
+
+		if (arg == "-max") {
+			args=true;
+			max = atoi( &argv[i+1][0] );
+		}
+
+		if (arg == "-c") {
+			args=true;
+			charset = argv[i+1];
+		}
+
 		if (arg == "-w") {
-			reqArgs++;
+			args=true;
 			wordFileName = argv[i+1];
 		}
 
 		if (arg == "-r") {
-			reqArgs++;
+			args=true;
 			rulesFileName = argv[i+1];
 		}
 
 		if (arg == "-t") {
+			args=true;
 			hashType =  atoi( &argv[i+1][0] );
 		}
     }
 
-	if(reqArgs == 0) {
+	if(!args) {
 		cout << "\nCracker\n-----------\n" << endl;
-		cout << "Usage : ./cracker -h hashlist.txt -w wordlist.txt -r rules.txt [-t hashtype] [-a attackMode]\n" << endl;
+		cout << "Usage : ./cracker -h hashlist.txt -w wordlist.txt -r rules.txt [-t hashtype] [-a attackMode] [-min # -max #]\n" << endl;
 		cout << " - hashtype :\n   | 0 : md5 <- default\n   | 1 : sha1\n   | 2 : sha256\n   | 3 : sha512\n" << endl;
-		cout << " - attackMode :\n   | 0 : dictionnary <- default\n   | 1 : rules\n   | 2 : combinator\n" << endl;
+		cout << " - attackMode :\n   | 0 : dictionnary <- default\n   | 1 : rules\n   | 2 : combinator\n   | 6 : bruteforce\n" << endl;
 		return 0;
 	} else {
 
@@ -100,6 +122,15 @@ int main(int argc, char *argv[])
 					cracker.setHashType(hash);
 					cracker.setHashlist(hashFileName);
 					cracker.setWordlist(wordFileName);
+					cracker.run();
+				break;
+			}
+			case 3 : {
+					BruteForceAttack cracker;
+					cracker.setHashType(hash);
+					cracker.setRange(min, max);
+					cracker.setHashlist(hashFileName);
+					cracker.setCharset(charset);
 					cracker.run();
 				break;
 			}
