@@ -28,6 +28,7 @@
 #include "Attacks/Dictionnary/DictionnaryAttack.cpp"
 #include "Attacks/Combinator/CombinatorAttack.cpp"
 #include "Attacks/BF/BruteForceAttack.cpp"
+#include "Attacks/Masks/MaskAttack.cpp"
 
 using namespace std;
 
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
 	string wordFileName;
 	string rulesFileName;
 	string charset;
+	string mask;
 	int	attackType = 0;
 	int hashType = 0;
 	int reqArgs = 0;
@@ -73,6 +75,11 @@ int main(int argc, char *argv[])
 			charset = argv[i+1];
 		}
 
+		if (arg == "-m") {
+			args=true;
+			mask = argv[i+1];
+		}
+
 		if (arg == "-w") {
 			args=true;
 			wordFileName = argv[i+1];
@@ -90,10 +97,10 @@ int main(int argc, char *argv[])
     }
 
 	if(!args) {
-		cout << "\nCracker\n-----------\n" << endl;
-		cout << "Usage : ./cracker -h hashlist.txt -w wordlist.txt -r rules.txt [-t hashtype] [-a attackMode] [-min # -max #]\n" << endl;
+		cout << "\nZen Crack\n-----------\n" << endl;
+		cout << "Usage : ./cracker -h hashlist.txt -w wordlist.txt -r rules.txt [-t hashtype] [-a attackMode] [-min # -max #] [-m mask]\n" << endl;
 		cout << " - hashtype :\n   | 0 : md5 <- default\n   | 1 : sha1\n   | 2 : sha256\n   | 3 : sha512\n" << endl;
-		cout << " - attackMode :\n   | 0 : dictionnary <- default\n   | 1 : rules\n   | 2 : combinator\n   | 6 : bruteforce\n" << endl;
+		cout << " - attackMode :\n   | 0 : dictionnary <- default\n   | 1 : rules\n   | 2 : combinator\n   | 3 : bruteforce\n   | 4 : masks\n" << endl;
 		return 0;
 	} else {
 
@@ -131,6 +138,14 @@ int main(int argc, char *argv[])
 					cracker.setRange(min, max);
 					cracker.setHashlist(hashFileName);
 					cracker.setCharset(charset);
+					cracker.run();
+				break;
+			}
+			case 4 : {
+					MaskAttack cracker;
+					cracker.setHashType(hash);
+					cracker.setMask(mask);
+					cracker.setHashlist(hashFileName);
 					cracker.run();
 				break;
 			}
