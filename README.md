@@ -8,6 +8,7 @@ Attacks mode :
  - Mask
  - Combinator
  - Rule-based
+ - Dictionnary
 
 Hash types :
  - Md5
